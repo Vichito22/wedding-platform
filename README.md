@@ -8,6 +8,30 @@
 - Docker
 - Railway
 
+## Deployment (Railway)
+
+This project is designed to be deployed using Railway.
+
+### Services
+
+- Frontend: Next.js
+- Backend: FastAPI
+- Database: PostgreSQL
+
+### Railway Setup
+
+1. Create a new Railway project
+2. Connect the GitHub repository
+3. Create 3 services:
+   - frontend
+   - backend
+   - PostgreSQL
+4. Configure each service root directory:
+   - frontend → `apps/frontend`
+   - backend → `apps/backend`
+5. Add environment variables
+6. Deploy
+
 ## Running Locally
 
 ### Option 1: With Docker (Recommended)
