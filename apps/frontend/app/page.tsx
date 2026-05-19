@@ -1,4 +1,5 @@
 import HealthCheckButton from "@/app/components/HealthCheckButton";
+import DBConnectionButton from "@/app/components/DBConnectionButton";
 
 export default function Home() {
   return (
@@ -7,7 +8,10 @@ export default function Home() {
         <h1 className="text-4xl font-bold text-black dark:text-white">
           Wedding Platform
         </h1>
-        <HealthCheckButton />
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <HealthCheckButton />
+          <DBConnectionButton />
+        </div>
       </div>
     </div>
   );
