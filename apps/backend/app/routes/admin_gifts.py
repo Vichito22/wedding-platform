@@ -3,12 +3,18 @@ from sqlalchemy.orm import Session
 
 from app.db.connection import get_db
 from app.routes.auth import get_current_admin
-from app.schemas.gift import GiftCreateRequest, GiftListResponse, GiftResponse
+from app.schemas.gift import (
+    GiftCreateRequest,
+    GiftListResponse,
+    GiftResponse,
+    GiftUpdateRequest,
+)
 from app.services.gift_service import (
     GiftNotFoundError,
     create_gift,
     list_gifts,
     release_gift,
+    update_gift,
 )
 
 router = APIRouter(prefix="/admin/gifts", tags=["admin-gifts"])
@@ -29,6 +35,22 @@ def list_admin_gifts(
     _: object = Depends(get_current_admin),
 ):
     return {"gifts": list_gifts(db)}
+
+
+@router.put("/{gift_id}", response_model=GiftResponse)
+def update_gift_endpoint(
+    gift_id: int,
+    payload: GiftUpdateRequest,
+    db: Session = Depends(get_db),
+    _: object = Depends(get_current_admin),
+):
+    try:
+        return update_gift(db, gift_id, payload)
+    except GiftNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El regalo no existe",
+        )
 
 
 @router.post("/{gift_id}/release", response_model=GiftResponse)

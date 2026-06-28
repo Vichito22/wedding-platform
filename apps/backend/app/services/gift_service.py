@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models.gift import Gift
-from app.schemas.gift import GiftCreateRequest
+from app.schemas.gift import GiftCreateRequest, GiftUpdateRequest
 
 
 class GiftNotFoundError(Exception):
@@ -24,6 +24,22 @@ def create_gift(db: Session, payload: GiftCreateRequest) -> Gift:
         position_order=payload.position_order,
     )
     db.add(gift)
+    db.commit()
+    db.refresh(gift)
+    return gift
+
+
+def update_gift(db: Session, gift_id: int, payload: GiftUpdateRequest) -> Gift:
+    gift = db.query(Gift).filter(Gift.id == gift_id).first()
+    if gift is None:
+        raise GiftNotFoundError(gift_id)
+
+    gift.name = payload.name.strip()
+    gift.description = payload.description
+    gift.image_url = payload.image_url
+    gift.price_reference = payload.price_reference
+    gift.category = payload.category
+    gift.position_order = payload.position_order
     db.commit()
     db.refresh(gift)
     return gift

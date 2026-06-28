@@ -34,6 +34,15 @@ interface GiftCreateRequest {
   position_order: number;
 }
 
+interface GiftUpdateRequest {
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  price_reference: number | null;
+  category: string | null;
+  position_order: number;
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
@@ -47,6 +56,15 @@ export default function AdminPage() {
   const [priceReference, setPriceReference] = useState("");
   const [category, setCategory] = useState("");
   const [positionOrder, setPositionOrder] = useState("0");
+
+  const [editingGift, setEditingGift] = useState<Gift | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editPriceReference, setEditPriceReference] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editPositionOrder, setEditPositionOrder] = useState("0");
+  const [updating, setUpdating] = useState(false);
 
   const hasGifts = useMemo(() => gifts.length > 0, [gifts.length]);
 
@@ -116,6 +134,56 @@ export default function AdminPage() {
       showToast(message, { type: "error" });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (gift: Gift) => {
+    setEditingGift(gift);
+    setEditName(gift.name);
+    setEditDescription(gift.description ?? "");
+    setEditImageUrl(gift.image_url ?? "");
+    setEditPriceReference(gift.price_reference ?? "");
+    setEditCategory(gift.category ?? "");
+    setEditPositionOrder(String(gift.position_order));
+  };
+
+  const closeEditModal = () => {
+    setEditingGift(null);
+  };
+
+  const handleUpdateGift = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingGift) return;
+    setUpdating(true);
+
+    const payload: GiftUpdateRequest = {
+      name: editName.trim(),
+      description: editDescription.trim() || null,
+      image_url: editImageUrl.trim() || null,
+      price_reference: editPriceReference.trim()
+        ? Number(editPriceReference)
+        : null,
+      category: editCategory.trim() || null,
+      position_order: Number(editPositionOrder) || 0,
+    };
+
+    try {
+      await apiFetch<Gift>(`/admin/gifts/${editingGift.id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      showToast("Regalo actualizado", { type: "success" });
+      closeEditModal();
+      await loadData();
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : "No se pudo actualizar el regalo";
+      showToast(message, { type: "error" });
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -248,11 +316,19 @@ export default function AdminPage() {
                           Categoria: {gift.category ?? "sin categoria"} | Orden: {gift.position_order}
                         </p>
                       </div>
-                      {gift.price_reference ? (
-                        <span className="text-sm font-semibold text-slate-700">
-                          ${gift.price_reference}
-                        </span>
-                      ) : null}
+                      <div className="flex flex-col items-end gap-2">
+                        {gift.price_reference ? (
+                          <span className="text-sm font-semibold text-slate-700">
+                            ${gift.price_reference}
+                          </span>
+                        ) : null}
+                        <button
+                          onClick={() => openEditModal(gift)}
+                          className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 hover:bg-slate-50"
+                        >
+                          Editar
+                        </button>
+                      </div>
                     </div>
 
                     {gift.is_reserved ? (
@@ -275,6 +351,79 @@ export default function AdminPage() {
           </article>
         </section>
       </div>
+
+      {editingGift ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          onClick={closeEditModal}
+        >
+          <div
+            className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-5 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-semibold text-slate-900">
+              Editar regalo
+            </h2>
+            <form className="mt-4 space-y-3" onSubmit={handleUpdateGift}>
+              <input
+                placeholder="Nombre"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                required
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+              <textarea
+                placeholder="Descripcion"
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 min-h-24"
+              />
+              <input
+                placeholder="URL de imagen"
+                value={editImageUrl}
+                onChange={(e) => setEditImageUrl(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+              <input
+                placeholder="Precio referencia"
+                inputMode="decimal"
+                value={editPriceReference}
+                onChange={(e) => setEditPriceReference(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+              <input
+                placeholder="Categoria"
+                value={editCategory}
+                onChange={(e) => setEditCategory(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+              <input
+                placeholder="Posicion"
+                inputMode="numeric"
+                value={editPositionOrder}
+                onChange={(e) => setEditPositionOrder(e.target.value)}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="flex-1 rounded-lg py-2.5 font-medium border border-slate-300 text-slate-700 hover:bg-slate-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating}
+                  className="flex-1 bg-slate-900 text-white rounded-lg py-2.5 font-medium hover:bg-slate-800 disabled:opacity-70"
+                >
+                  {updating ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
