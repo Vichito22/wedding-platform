@@ -47,13 +47,18 @@ def login_admin(payload: AdminLoginRequest, response: Response, db: Session = De
         samesite=settings.auth_cookie_samesite,
         max_age=settings.jwt_expire_minutes * 60,
         path="/",
+        domain=settings.auth_cookie_domain,
     )
     return {"message": "Login successful"}
 
 
 @router.post("/logout", response_model=MessageResponse)
 def logout_admin(response: Response):
-    response.delete_cookie(key=settings.auth_cookie_name, path="/")
+    response.delete_cookie(
+        key=settings.auth_cookie_name,
+        path="/",
+        domain=settings.auth_cookie_domain,
+    )
     return {"message": "Logout successful"}
 
 

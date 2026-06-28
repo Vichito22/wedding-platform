@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     auth_cookie_name: str = "admin_session"
     auth_cookie_secure: bool = False
     auth_cookie_samesite: str = "lax"
+    auth_cookie_domain: str | None = None
     admin_seed_email: str | None = None
     admin_seed_password: str | None = None
     cors_origins: List[str] = [
