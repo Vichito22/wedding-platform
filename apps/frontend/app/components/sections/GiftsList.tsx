@@ -4,9 +4,17 @@ import { useState } from "react";
 import Image from "next/image";
 
 import ReserveGiftButton from "@/app/components/ReserveGiftButton";
+import UnreserveGiftButton from "@/app/components/UnreserveGiftButton";
 import type { PublicGift } from "@/app/components/sections/GiftsSection";
 
 const PAGE_SIZE = 6;
+
+function formatReservedBy(name: string | null): string {
+  if (!name) return "un invitado";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[1][0].toUpperCase()}.`;
+}
 
 export default function GiftsList({ gifts }: { gifts: PublicGift[] }) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -51,9 +59,12 @@ export default function GiftsList({ gifts }: { gifts: PublicGift[] }) {
 
               <div className="pt-1">
                 {gift.is_reserved ? (
-                  <span className="inline-flex w-full items-center justify-center rounded-full bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-800">
-                    Reservado por {gift.reserved_by ?? "un invitado"}
-                  </span>
+                  <div className="space-y-2">
+                    <span className="inline-flex w-full items-center justify-center rounded-full bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-800">
+                      Reservado por {formatReservedBy(gift.reserved_by)}
+                    </span>
+                    <UnreserveGiftButton giftId={gift.id} giftName={gift.name} />
+                  </div>
                 ) : (
                   <ReserveGiftButton giftId={gift.id} />
                 )}

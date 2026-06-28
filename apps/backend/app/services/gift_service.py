@@ -1,3 +1,4 @@
+import unicodedata
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
@@ -12,6 +13,24 @@ class GiftNotFoundError(Exception):
 
 class GiftAlreadyReservedError(Exception):
     pass
+
+
+class GiftNotReservedError(Exception):
+    pass
+
+
+class GiftReservationMismatchError(Exception):
+    pass
+
+
+def _normalize_name(value: str) -> str:
+    # Strip diacritics (tildes/accents) so "José" matches "Jose", then
+    # collapse whitespace and casefold for an accent- and case-insensitive compare.
+    decomposed = unicodedata.normalize("NFKD", value)
+    without_accents = "".join(
+        ch for ch in decomposed if not unicodedata.combining(ch)
+    )
+    return " ".join(without_accents.split()).casefold()
 
 
 def create_gift(db: Session, payload: GiftCreateRequest) -> Gift:
@@ -73,6 +92,26 @@ def reserve_gift(db: Session, gift_id: int, first_name: str, last_name: str) -> 
 
     db.commit()
     gift = db.query(Gift).filter(Gift.id == gift_id).first()
+    db.refresh(gift)
+    return gift
+
+
+def unreserve_gift(db: Session, gift_id: int, first_name: str, last_name: str) -> Gift:
+    gift = db.query(Gift).filter(Gift.id == gift_id).first()
+    if gift is None:
+        raise GiftNotFoundError(gift_id)
+
+    if not gift.is_reserved:
+        raise GiftNotReservedError(gift_id)
+
+    provided = _normalize_name(f"{first_name} {last_name}")
+    if provided != _normalize_name(gift.reserved_by or ""):
+        raise GiftReservationMismatchError(gift_id)
+
+    gift.is_reserved = False
+    gift.reserved_by = None
+    gift.reserved_at = None
+    db.commit()
     db.refresh(gift)
     return gift
 

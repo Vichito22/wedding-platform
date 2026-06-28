@@ -27,6 +27,11 @@ class GiftReserveRequest(BaseModel):
     last_name: str = Field(min_length=1, max_length=120)
 
 
+class GiftUnreserveRequest(BaseModel):
+    first_name: str = Field(min_length=1, max_length=120)
+    last_name: str = Field(min_length=1, max_length=120)
+
+
 class GiftResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
