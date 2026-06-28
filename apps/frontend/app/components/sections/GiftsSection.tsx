@@ -13,6 +13,16 @@ export interface PublicGift {
 }
 
 export default function GiftsSection({ gifts }: { gifts: PublicGift[] }) {
+  const sortedGifts = [...gifts].sort((a, b) => {
+    if (a.is_reserved !== b.is_reserved) {
+      return Number(a.is_reserved) - Number(b.is_reserved);
+    }
+    if (a.position_order !== b.position_order) {
+      return a.position_order - b.position_order;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <section
       id="regalos"
@@ -52,7 +62,7 @@ export default function GiftsSection({ gifts }: { gifts: PublicGift[] }) {
               Aun no hay regalos publicados.
             </div>
           ) : (
-            <GiftsList gifts={gifts} />
+            <GiftsList gifts={sortedGifts} />
           )}
         </div>
       </div>
