@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wedding Platform",
-  description: "A wedding planning platform",
+  title: "Nuestra Boda",
+  description: "Te invitamos a celebrar nuestra boda — 6 de marzo de 2027",
 };
 
 export default function RootLayout({
