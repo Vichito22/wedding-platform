@@ -5,9 +5,9 @@ export interface PublicGift {
   name: string;
   description: string | null;
   image_url: string | null;
-  category: string | null;
   is_reserved: boolean;
   reserved_by: string | null;
+  // Prioridad: 1 = alta, 2 = media, 3 = baja (ver apps/backend/app/models/gift.py)
   position_order: number;
 }
 

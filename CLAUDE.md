@@ -29,6 +29,9 @@ Tables are created at startup via `Base.metadata.create_all` (see `create_all_ta
 
 On startup the app also calls `seed_admin_if_needed`, which creates the admin row from `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` only if both are set and the admin does not already exist.
 
+### Gift priority
+`Gift.position_order` is **not** a free-form sort index — it encodes priority: `1 = alta`, `2 = media`, `3 = baja` (default `2`). The API constrains it with `ge=1, le=3` in `schemas/gift.py`, and both `list_gifts` and the client-side sort in `GiftsSection.tsx` order it ascending, so high priority comes first. The admin UI renders it as a three-option `<select>` (`PRIORITY_OPTIONS` in `app/admin/page.tsx`).
+
 ### Auth model
 Admin-only auth using a **JWT stored in an httponly cookie** (`admin_session`):
 - `POST /admin/auth/login` validates credentials (`pbkdf2_sha256` via passlib) and sets the cookie; `/logout` clears it; `/session` returns the current admin.

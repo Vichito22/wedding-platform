@@ -38,8 +38,6 @@ def create_gift(db: Session, payload: GiftCreateRequest) -> Gift:
         name=payload.name.strip(),
         description=payload.description,
         image_url=payload.image_url,
-        price_reference=payload.price_reference,
-        category=payload.category,
         position_order=payload.position_order,
     )
     db.add(gift)
@@ -56,8 +54,6 @@ def update_gift(db: Session, gift_id: int, payload: GiftUpdateRequest) -> Gift:
     gift.name = payload.name.strip()
     gift.description = payload.description
     gift.image_url = payload.image_url
-    gift.price_reference = payload.price_reference
-    gift.category = payload.category
     gift.position_order = payload.position_order
     db.commit()
     db.refresh(gift)

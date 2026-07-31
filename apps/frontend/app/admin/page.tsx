@@ -7,13 +7,25 @@ import { ApiError, apiFetch } from "@/app/utils/api";
 import { getAdminSession, logoutAdmin } from "@/app/utils/auth";
 import { showToast } from "@/app/utils/toast";
 
+// La prioridad se guarda en position_order: 1 = alta, 2 = media, 3 = baja.
+// El backend ordena ascendente, asi que la prioridad alta aparece primero.
+const PRIORITY_OPTIONS = [
+  { value: 1, label: "Prioridad alta" },
+  { value: 2, label: "Prioridad media" },
+  { value: 3, label: "Prioridad baja" },
+] as const;
+
+const DEFAULT_PRIORITY = 2;
+
+const priorityLabel = (value: number) =>
+  PRIORITY_OPTIONS.find((option) => option.value === value)?.label ??
+  "Prioridad media";
+
 interface Gift {
   id: number;
   name: string;
   description: string | null;
   image_url: string | null;
-  price_reference: string | null;
-  category: string | null;
   is_reserved: boolean;
   reserved_by: string | null;
   reserved_at: string | null;
@@ -29,8 +41,6 @@ interface GiftCreateRequest {
   name: string;
   description?: string;
   image_url?: string;
-  price_reference?: number;
-  category?: string;
   position_order: number;
 }
 
@@ -38,8 +48,6 @@ interface GiftUpdateRequest {
   name: string;
   description: string | null;
   image_url: string | null;
-  price_reference: number | null;
-  category: string | null;
   position_order: number;
 }
 
@@ -53,17 +61,13 @@ export default function AdminPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [priceReference, setPriceReference] = useState("");
-  const [category, setCategory] = useState("");
-  const [positionOrder, setPositionOrder] = useState("0");
+  const [priority, setPriority] = useState<number>(DEFAULT_PRIORITY);
 
   const [editingGift, setEditingGift] = useState<Gift | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
-  const [editPriceReference, setEditPriceReference] = useState("");
-  const [editCategory, setEditCategory] = useState("");
-  const [editPositionOrder, setEditPositionOrder] = useState("0");
+  const [editPriority, setEditPriority] = useState<number>(DEFAULT_PRIORITY);
   const [updating, setUpdating] = useState(false);
 
   const hasGifts = useMemo(() => gifts.length > 0, [gifts.length]);
@@ -98,9 +102,7 @@ export default function AdminPage() {
     setName("");
     setDescription("");
     setImageUrl("");
-    setPriceReference("");
-    setCategory("");
-    setPositionOrder("0");
+    setPriority(DEFAULT_PRIORITY);
   };
 
   const handleCreateGift = async (event: FormEvent<HTMLFormElement>) => {
@@ -109,13 +111,11 @@ export default function AdminPage() {
 
     const payload: GiftCreateRequest = {
       name: name.trim(),
-      position_order: Number(positionOrder) || 0,
+      position_order: priority,
     };
 
     if (description.trim()) payload.description = description.trim();
     if (imageUrl.trim()) payload.image_url = imageUrl.trim();
-    if (category.trim()) payload.category = category.trim();
-    if (priceReference.trim()) payload.price_reference = Number(priceReference);
 
     try {
       await apiFetch<Gift>("/admin/gifts", {
@@ -142,9 +142,7 @@ export default function AdminPage() {
     setEditName(gift.name);
     setEditDescription(gift.description ?? "");
     setEditImageUrl(gift.image_url ?? "");
-    setEditPriceReference(gift.price_reference ?? "");
-    setEditCategory(gift.category ?? "");
-    setEditPositionOrder(String(gift.position_order));
+    setEditPriority(gift.position_order);
   };
 
   const closeEditModal = () => {
@@ -160,11 +158,7 @@ export default function AdminPage() {
       name: editName.trim(),
       description: editDescription.trim() || null,
       image_url: editImageUrl.trim() || null,
-      price_reference: editPriceReference.trim()
-        ? Number(editPriceReference)
-        : null,
-      category: editCategory.trim() || null,
-      position_order: Number(editPositionOrder) || 0,
+      position_order: editPriority,
     };
 
     try {
@@ -243,7 +237,7 @@ export default function AdminPage() {
                 className="w-full border border-slate-300 rounded-lg px-3 py-2"
               />
               <textarea
-                placeholder="Descripcion"
+                placeholder="Descripcion (opcional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 min-h-24"
@@ -254,26 +248,17 @@ export default function AdminPage() {
                 onChange={(e) => setImageUrl(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2"
               />
-              <input
-                placeholder="Precio referencia"
-                inputMode="decimal"
-                value={priceReference}
-                onChange={(e) => setPriceReference(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
-              <input
-                placeholder="Categoria"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
-              <input
-                placeholder="Posicion"
-                inputMode="numeric"
-                value={positionOrder}
-                onChange={(e) => setPositionOrder(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
+              <select
+                value={priority}
+                onChange={(e) => setPriority(Number(e.target.value))}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+              >
+                {PRIORITY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 disabled={submitting}
@@ -312,16 +297,11 @@ export default function AdminPage() {
                         {gift.description ? (
                           <p className="text-sm text-slate-600 mt-1">{gift.description}</p>
                         ) : null}
-                        <p className="text-sm text-slate-500 mt-2">
-                          Categoria: {gift.category ?? "sin categoria"} | Orden: {gift.position_order}
-                        </p>
+                        <span className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                          {priorityLabel(gift.position_order)}
+                        </span>
                       </div>
-                      <div className="flex flex-col items-end gap-2">
-                        {gift.price_reference ? (
-                          <span className="text-sm font-semibold text-slate-700">
-                            ${gift.price_reference}
-                          </span>
-                        ) : null}
+                      <div>
                         <button
                           onClick={() => openEditModal(gift)}
                           className="text-sm border border-slate-300 rounded-lg px-3 py-1.5 hover:bg-slate-50"
@@ -373,7 +353,7 @@ export default function AdminPage() {
                 className="w-full border border-slate-300 rounded-lg px-3 py-2"
               />
               <textarea
-                placeholder="Descripcion"
+                placeholder="Descripcion (opcional)"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 min-h-24"
@@ -384,26 +364,17 @@ export default function AdminPage() {
                 onChange={(e) => setEditImageUrl(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2"
               />
-              <input
-                placeholder="Precio referencia"
-                inputMode="decimal"
-                value={editPriceReference}
-                onChange={(e) => setEditPriceReference(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
-              <input
-                placeholder="Categoria"
-                value={editCategory}
-                onChange={(e) => setEditCategory(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
-              <input
-                placeholder="Posicion"
-                inputMode="numeric"
-                value={editPositionOrder}
-                onChange={(e) => setEditPositionOrder(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
-              />
+              <select
+                value={editPriority}
+                onChange={(e) => setEditPriority(Number(e.target.value))}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"
+              >
+                {PRIORITY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
               <div className="flex gap-3 pt-1">
                 <button
                   type="button"
