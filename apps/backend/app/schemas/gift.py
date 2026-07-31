@@ -8,14 +8,14 @@ class GiftCreateRequest(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     image_url: str | None = Field(default=None, max_length=1024)
     # 1 = alta, 2 = media, 3 = baja
-    position_order: int = Field(default=2, ge=1, le=3)
+    position_order: int = Field(default=1, ge=1, le=3)
 
 
 class GiftUpdateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=2000)
     image_url: str | None = Field(default=None, max_length=1024)
-    position_order: int = Field(default=2, ge=1, le=3)
+    position_order: int = Field(default=1, ge=1, le=3)
 
 
 class GiftReserveRequest(BaseModel):

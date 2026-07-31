@@ -15,7 +15,7 @@ const PRIORITY_OPTIONS = [
   { value: 3, label: "Prioridad baja" },
 ] as const;
 
-const DEFAULT_PRIORITY = 2;
+const DEFAULT_PRIORITY = 1;
 
 const priorityLabel = (value: number) =>
   PRIORITY_OPTIONS.find((option) => option.value === value)?.label ??

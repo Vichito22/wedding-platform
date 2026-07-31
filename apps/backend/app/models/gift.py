@@ -18,7 +18,7 @@ class Gift(Base):
     reserved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Prioridad del regalo: 1 = alta, 2 = media, 3 = baja. Se ordena ascendente,
     # asi que la prioridad alta aparece primero.
-    position_order: Mapped[int] = mapped_column(Integer, default=2, nullable=False)
+    position_order: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
