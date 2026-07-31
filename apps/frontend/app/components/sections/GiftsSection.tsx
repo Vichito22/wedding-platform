@@ -5,7 +5,6 @@ export interface PublicGift {
   name: string;
   description: string | null;
   image_url: string | null;
-  price_reference: string | null;
   category: string | null;
   is_reserved: boolean;
   reserved_by: string | null;
@@ -28,16 +27,17 @@ export default function GiftsSection({ gifts }: { gifts: PublicGift[] }) {
       id="regalos"
       className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-16 sm:px-6 lg:px-8"
     >
-      <header className="space-y-4">
+      <header className="space-y-4 text-center">
         <div className="inline-flex rounded-full border border-white/70 bg-white/70 px-4 py-1 text-xs font-medium uppercase tracking-[0.28em] text-slate-600 shadow-sm backdrop-blur">
           Lista de regalos
         </div>
-        <h2 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+        <h2 className="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
           Regalos
         </h2>
-        <p className="max-w-3xl text-base leading-7 text-slate-600 sm:text-lg">
-          Aquí puedes ver los regalos que quieren los novios, con su imagen y
-          precio de referencia.
+        <p className="mx-auto max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+          Estos son los regalos que nos encantaría recibir. Puedes reservar el
+          que quieras dejándonos tu nombre y apellido — los mismos que
+          necesitarás si luego prefieres anular la reserva.
         </p>
       </header>
 
