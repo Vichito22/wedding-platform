@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -8,18 +7,15 @@ class GiftCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=2000)
     image_url: str | None = Field(default=None, max_length=1024)
-    price_reference: Decimal | None = Field(default=None, ge=0)
-    category: str | None = Field(default=None, max_length=120)
-    position_order: int = Field(default=0, ge=0)
+    # 1 = alta, 2 = media, 3 = baja
+    position_order: int = Field(default=1, ge=1, le=3)
 
 
 class GiftUpdateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=2000)
     image_url: str | None = Field(default=None, max_length=1024)
-    price_reference: Decimal | None = Field(default=None, ge=0)
-    category: str | None = Field(default=None, max_length=120)
-    position_order: int = Field(default=0, ge=0)
+    position_order: int = Field(default=1, ge=1, le=3)
 
 
 class GiftReserveRequest(BaseModel):
@@ -39,8 +35,6 @@ class GiftResponse(BaseModel):
     name: str
     description: str | None
     image_url: str | None
-    price_reference: Decimal | None
-    category: str | None
     is_reserved: bool
     reserved_by: str | None
     reserved_at: datetime | None

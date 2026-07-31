@@ -1,11 +1,4 @@
-// Galería de fotos de la pareja. Por ahora son placeholders.
-// TODO: reemplazar por fotos reales en public/images/couple/ usando
-// <Image src="/images/couple/foto-1.jpg" alt="..." fill className="object-cover" />
-const PHOTO_PLACEHOLDERS = [
-  { id: 1, span: "sm:col-span-2 sm:row-span-2" },
-  { id: 2, span: "" },
-  { id: 3, span: "" },
-];
+import CoupleGallery from "@/app/components/sections/CoupleGallery";
 
 export default function HeroSection() {
   return (
@@ -32,19 +25,8 @@ export default function HeroSection() {
         </p>
       </div>
 
-      {/* Galería de fotos de la pareja (placeholders) */}
-      <div className="mt-12 grid auto-rows-[180px] grid-cols-1 gap-4 sm:grid-cols-3 sm:auto-rows-[200px]">
-        {PHOTO_PLACEHOLDERS.map((photo) => (
-          <div
-            key={photo.id}
-            className={`relative flex items-center justify-center overflow-hidden rounded-3xl border border-dashed border-slate-300 bg-white/60 shadow-sm backdrop-blur ${photo.span}`}
-          >
-            <span className="text-xs font-medium uppercase tracking-[0.22em] text-slate-400">
-              Foto de la pareja
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* Galería de fotos de la pareja */}
+      <CoupleGallery />
     </section>
   );
 }
