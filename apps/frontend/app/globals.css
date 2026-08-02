@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+/* Fondo de la home: base crema + destellos ámbar/rosa muy suaves.
+   Se pinta en una capa fija del tamaño del viewport para que los destellos
+   no se estiren ni se corten en una página larga.
+   Ojo: no agregar transform/filter al elemento que use esta utilidad, o el
+   ::before dejaría de anclarse al viewport. */
+@utility bg-celebration {
+  position: relative;
+  isolation: isolate;
+  background-color: #fff7ed;
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: #fff7ed;
+    background-image:
+      /* ámbar, arriba izquierda */
+      radial-gradient(60% 50% at 8% 0%, rgba(251, 191, 36, 0.3), transparent 70%),
+      /* rosa, arriba derecha */
+      radial-gradient(55% 45% at 95% 6%, rgba(251, 113, 133, 0.22), transparent 70%),
+      /* durazno, medio izquierda */
+      radial-gradient(50% 45% at 0% 62%, rgba(253, 186, 116, 0.24), transparent 70%),
+      /* rosa, abajo derecha */
+      radial-gradient(60% 50% at 100% 95%, rgba(244, 114, 182, 0.18), transparent 70%);
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
