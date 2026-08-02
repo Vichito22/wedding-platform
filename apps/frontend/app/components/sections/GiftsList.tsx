@@ -6,6 +6,7 @@ import Image from "next/image";
 import ReserveGiftButton from "@/app/components/ReserveGiftButton";
 import UnreserveGiftButton from "@/app/components/UnreserveGiftButton";
 import type { PublicGift } from "@/app/components/sections/GiftsSection";
+import { resolveGiftImageSrc } from "@/app/utils/gifts";
 
 const PAGE_SIZE = 6;
 
@@ -33,7 +34,7 @@ export default function GiftsList({ gifts }: { gifts: PublicGift[] }) {
             <div className="relative aspect-square bg-slate-50">
               {gift.image_url ? (
                 <Image
-                  src={gift.image_url}
+                  src={resolveGiftImageSrc(gift.image_url)}
                   alt={gift.name}
                   fill
                   className="object-contain p-4"

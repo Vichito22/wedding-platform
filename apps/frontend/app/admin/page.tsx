@@ -3,8 +3,10 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import GiftImageField from "@/app/components/GiftImageField";
 import { ApiError, apiFetch } from "@/app/utils/api";
 import { getAdminSession, logoutAdmin } from "@/app/utils/auth";
+import { resolveGiftImageSrc, uploadGiftImage } from "@/app/utils/gifts";
 import { showToast } from "@/app/utils/toast";
 
 // La prioridad se guarda en position_order: 1 = alta, 2 = media, 3 = baja.
@@ -60,13 +62,14 @@ export default function AdminPage() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [priority, setPriority] = useState<number>(DEFAULT_PRIORITY);
 
   const [editingGift, setEditingGift] = useState<Gift | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [editPriority, setEditPriority] = useState<number>(DEFAULT_PRIORITY);
   const [updating, setUpdating] = useState(false);
 
@@ -101,7 +104,7 @@ export default function AdminPage() {
   const resetForm = () => {
     setName("");
     setDescription("");
-    setImageUrl("");
+    setImageFile(null);
     setPriority(DEFAULT_PRIORITY);
   };
 
@@ -115,9 +118,14 @@ export default function AdminPage() {
     };
 
     if (description.trim()) payload.description = description.trim();
-    if (imageUrl.trim()) payload.image_url = imageUrl.trim();
 
     try {
+      // La imagen se sube primero: si falla, no se crea el regalo.
+      if (imageFile) {
+        const uploaded = await uploadGiftImage(imageFile);
+        payload.image_url = uploaded.image_url;
+      }
+
       await apiFetch<Gift>("/admin/gifts", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -141,7 +149,8 @@ export default function AdminPage() {
     setEditingGift(gift);
     setEditName(gift.name);
     setEditDescription(gift.description ?? "");
-    setEditImageUrl(gift.image_url ?? "");
+    setEditImageUrl(gift.image_url);
+    setEditImageFile(null);
     setEditPriority(gift.position_order);
   };
 
@@ -157,11 +166,16 @@ export default function AdminPage() {
     const payload: GiftUpdateRequest = {
       name: editName.trim(),
       description: editDescription.trim() || null,
-      image_url: editImageUrl.trim() || null,
+      image_url: editImageUrl,
       position_order: editPriority,
     };
 
     try {
+      if (editImageFile) {
+        const uploaded = await uploadGiftImage(editImageFile);
+        payload.image_url = uploaded.image_url;
+      }
+
       await apiFetch<Gift>(`/admin/gifts/${editingGift.id}`, {
         method: "PUT",
         body: JSON.stringify(payload),
@@ -242,11 +256,12 @@ export default function AdminPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 min-h-24"
               />
-              <input
-                placeholder="URL de imagen"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              <GiftImageField
+                currentImageUrl={null}
+                file={imageFile}
+                onFileChange={setImageFile}
+                onRemove={() => setImageFile(null)}
+                disabled={submitting}
               />
               <select
                 value={priority}
@@ -292,14 +307,30 @@ export default function AdminPage() {
                     className="rounded-xl border border-slate-200 p-4 bg-slate-50"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-medium text-slate-900">{gift.name}</h3>
-                        {gift.description ? (
-                          <p className="text-sm text-slate-600 mt-1">{gift.description}</p>
-                        ) : null}
-                        <span className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                          {priorityLabel(gift.position_order)}
-                        </span>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white">
+                          {gift.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={resolveGiftImageSrc(gift.image_url)}
+                              alt={gift.name}
+                              className="h-full w-full object-contain p-1"
+                            />
+                          ) : (
+                            <span className="text-[10px] uppercase text-slate-400">
+                              s/img
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-slate-900">{gift.name}</h3>
+                          {gift.description ? (
+                            <p className="text-sm text-slate-600 mt-1">{gift.description}</p>
+                          ) : null}
+                          <span className="mt-2 inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                            {priorityLabel(gift.position_order)}
+                          </span>
+                        </div>
                       </div>
                       <div>
                         <button
@@ -358,11 +389,12 @@ export default function AdminPage() {
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 min-h-24"
               />
-              <input
-                placeholder="URL de imagen"
-                value={editImageUrl}
-                onChange={(e) => setEditImageUrl(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              <GiftImageField
+                currentImageUrl={editImageUrl}
+                file={editImageFile}
+                onFileChange={setEditImageFile}
+                onRemove={() => setEditImageUrl(null)}
+                disabled={updating}
               />
               <select
                 value={editPriority}
