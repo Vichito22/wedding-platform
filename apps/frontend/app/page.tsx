@@ -33,7 +33,7 @@ export default async function Home() {
   const gifts = await loadPublicGifts();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,#fff7ed_0%,#f8fafc_36%,#eef2ff_100%)] text-slate-900">
+    <main className="min-h-screen bg-celebration text-slate-900">
       <SiteNav />
 
       <HeroSection />

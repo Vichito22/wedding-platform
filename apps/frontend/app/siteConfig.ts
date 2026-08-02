@@ -13,5 +13,5 @@ export const VENUE = "Casona del Huique";
 
 /** amber-600, el acento del sitio */
 export const AMBER = "#d97706";
-/** el tope del gradiente de la home */
+/** la base del fondo de la home */
 export const CREAM = "#fff7ed";

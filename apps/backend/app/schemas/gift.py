@@ -44,3 +44,10 @@ class GiftResponse(BaseModel):
 
 class GiftListResponse(BaseModel):
     gifts: list[GiftResponse]
+
+
+class GiftImageUploadResponse(BaseModel):
+    id: int
+    # Ruta relativa al backend; el frontend le antepone NEXT_PUBLIC_API_URL.
+    # Se guarda tal cual en Gift.image_url.
+    image_url: str
